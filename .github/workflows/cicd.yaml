@@ -1,4 +1,4 @@
-name: Battery Monitor CI
+name: Battery Monitor CI/CD
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/usmanda/robot-battery-monitor
 
 jobs:
   test-and-build:
@@ -29,4 +33,19 @@ jobs:
         run: python -m unittest -v
 
       - name: Build Docker image
-        run: docker build -t robot-battery-monitor .
+        run: |
+          docker build \
+            --label "org.opencontainers.image.source=https://github.com/usmanda/docker-robot-monitor" \
+            -t "$IMAGE_NAME:latest" .
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GH_TOKEN" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: Publish Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push "$IMAGE_NAME:latest"
