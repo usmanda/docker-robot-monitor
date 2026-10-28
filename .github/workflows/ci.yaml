@@ -1,0 +1,32 @@
+name: Battery Monitor CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download our code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install libraries
+        run: python -m pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m unittest -v
+
+      - name: Build Docker image
+        run: docker build -t robot-battery-monitor .
