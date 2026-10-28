@@ -12,7 +12,7 @@ def battery_status(level):
     if not 0 <= level <= 100:
         raise ValueError("Battery percentage must be between 0 and 100.")
 
-    if level >= 80:
+    if level >= 50:
         return "Ready for a mission", "green"
     elif level >= 20:
         return "Plan to recharge soon", "yellow"
